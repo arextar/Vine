@@ -1,0 +1,14 @@
+Vine.js
+-About 1.6KB
+-Can be used with or without the DOM
+
+Tested in:(I'll set up some test pages soon to test in other browsers)
+-Chrome 11
+
+API:
+
+vine.bind(target:Object/DOMElement,type:String,handler:Function) //binds a handler to the element
+vine.unbind(target:Object/DOMElement[,type:String][,handler:Function)) //unbinds a handler based on criteria
+vine.trigger(target:Object/DOMElement[,type:String][,event:Object/Event]) //returns event object after handler execution
+
+vine.Event(event:Object/Event) //normalizes an event (internal)
