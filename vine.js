@@ -1,4 +1,4 @@
-(function () {
+(function (document) {
 
     function each(obj, fn) {
         for (var x in obj) fn(obj[x], x)
@@ -14,7 +14,7 @@
             mousedown: 1,
             mouseup: 1,
             mousemove: 1
-        }[type]) && (init = "initMouseEvent", create = "MouseEvents"), evt = document.createEvent(create), evt[init](type), elem.dispatchEvent(evt))
+        }[type]) && (init = "initMouseEvent", create = "MouseEvents"), evt = document.createEvent(create), evt[init](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null), elem.dispatchEvent(evt))
     }
 
     function id(target) {
@@ -56,7 +56,7 @@
                     target._v = 1
                     if (vine.trigger(target, type, vine.Event(e)).canceled) e.preventDefault();
                     delete target._v
-                })), dat.b[type] = 1)
+                },null)), dat.b[type] = 1)
 
             })
         },
@@ -64,10 +64,10 @@
             evt = evt || {}
             each({
                 preventDefault: function () {
-                    this.defaultPrevented = true
+                    evt.defaultPrevented = true
                 },
                 stopPropogation: function () {
-                    this.propogationStopped = this.cancelBubble = true
+                    evt.propogationStopped = evt.cancelBubble = true
                 },
                 target: evt.srcElement,
                 timestamp: (new Date).getTime()
@@ -117,4 +117,4 @@
 
         }
     }
-})()
+})(document)
