@@ -8,8 +8,9 @@
 
         var init = "initEvent",
             create = "HTMLEvents",
-            evt
-        return elem.fireEvent ? (elem.fireEvent("on" + type, ev), !ev.retVal) : (({
+            evt,
+            div=document.documentElement.appendChild(document.createElement("div")),ret;
+        return elem.fireEvent ? (div.onclick=function(){elem.fireEvent("on" + type, window.event);ret=window.event.returnValue}, div.fireEvent("onclick"),ret) : (({
             click: 1,
             mousedown: 1,
             mouseup: 1,
@@ -37,7 +38,8 @@
     var expando = Math.random(),
         uid = 1,
         event = 0,
-        data = {}
+        data = {};
+        
     this.vine = {
         bind: function (target, type, fn) {
 
@@ -49,8 +51,8 @@
                 dat.b[type] || (target.nodeType && (target.attachEvent ? target.attachEvent("on" + type, function () {
 
                     target._v = 1;
-                    var ret = !vine.trigger(target, type, vine.Event(e)).cancel;
-                    delete target._v;
+                    var ret = !vine.trigger(target, type, vine.Event(window.event)).cancel;
+                    target._v=null;
                     return ret;
                 }) : target.addEventListener(type, function (e) {
                     target._v = 1
@@ -92,7 +94,8 @@
 
             target.nodeType && !target._v ? evt.canceled = ({
                 blur: 1,
-                focus: 1
+                focus: 1,
+                click:target.fireEvent
             }[type]) ? target[type]() : trigger(target, type, evt) : each(initData(target).e[type] || [], function (fn, x) {
                 evt.canceled = evt.canceled || fn.call(target, evt) === false || evt.defaultPrevented
             })
