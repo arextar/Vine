@@ -1,5 +1,5 @@
 Vine.js
--About 1.7KB
+-About 1.8KB
 -Can be used with or without the DOM
 
 Tested in:(I'll set up some test pages soon to test in other browsers)
@@ -12,12 +12,12 @@ vine.bind(target:Object/DOMElement,type:String,handler:Function) //binds a handl
 vine.unbind(target:Object/DOMElement[,type:String][,handler:Function)) //unbinds a handler based on criteria
 vine.trigger(target:Object/DOMElement[,type:String][,event:Object/Event]) //returns event object after handler execution
 
-vine.Event(event:Object/Event) //normalizes an event (internal)
+new vine.Event(event:Object/Event) //normalizes an event (internal)
 
 Examples:
 //if passed a string-it looks for an element with that id
 vine.bind("ch","click",function(e){
-
+e.preventDefault();
 })
 
 //simulate a mouseclick, this will check a checkbox if no events are bound to prevent that.
