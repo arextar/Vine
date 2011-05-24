@@ -64,7 +64,104 @@
 <ul id="test"></ul>
 <input type="checkbox" style="display:none" id="check" />
 <script src="https://github.com/arexkun/Vine/raw/master/vine.min.js"></script>
-<script src=""></script>
+<script>var list=document.getElementById("test"),txt=""
+
+function assert(pass,message){
+        txt+='<li class="'+(pass?"pass":"fail")+'">'+message+'</li>'
+}
+
+function render(){
+        list.innerHTML=txt;
+}
+
+var object={},triggered=false;
+
+function test(){
+        triggered=true
+}
+
+function test2(){
+        triggered=true
+}
+
+vine.bind(object,"custom",function(){
+        triggered=true;
+})
+
+vine.bind("ch","mousedown",function(){
+        triggered=true;
+})
+
+vine.bind(object,"mouse",test)
+
+vine.bind(object,"mousedown",test2)
+
+vine.bind(object,"mouseup",test2)
+
+vine.bind(object,"custom1 custom2",function(){
+        triggered=true;
+})
+
+
+vine.bind(object,"retcanceled",function(){
+        return false;
+})
+
+vine.bind(object,"prevcanceled",function(e){
+        console.dir(e)
+        e.preventDefault();
+})
+
+assert(vine,"'vine' in window")
+assert(vine.bind,"'bind' in vine")
+assert(vine.unbind,"'unbind' in vine")
+assert(vine.trigger,"'trigger' in vine")
+assert(vine.Event,"'Event' in vine")
+
+var evt=vine.trigger(object,"custom")
+assert(triggered,"Action is triggered")
+
+triggered=false
+
+assert(evt instanceof Object,"Returns an object")
+assert(!evt.defaultPrevented,"Event was not canceled")
+assert(vine.trigger(object,"retcanceled").defaultPrevented,"Canceled by returning false")
+assert(vine.trigger(object,"prevcanceled").defaultPrevented,"Canceled by calling e.preventDefault()")
+
+vine.trigger("ch","mousedown");
+assert(triggered,"Triggered event tied to element");
+triggered=false;
+
+vine.trigger("ch","click")
+assert(document.getElementById("ch").checked,"Simulate mouse click")
+
+vine.trigger(object,"custom1")
+assert(triggered,"First of multiple bound")
+triggered=false;
+
+vine.trigger(object,"custom2")
+assert(triggered,"Second of multiple bound")
+triggered=false;
+
+vine.unbind(object,"custom")
+vine.trigger(object,"custom")
+assert(!triggered,"Unbind whole type")
+
+vine.unbind(object,test)
+vine.trigger(object,"mouse")
+assert(!triggered,"Unbind all of one function")
+
+vine.unbind(object,"mouseup",test2)
+vine.trigger(object,"mouseup")
+assert(!triggered,"Unbind one function from a type")
+
+vine.trigger(object,"mousedown");
+assert(triggered,"Other instances of that function are intact")
+
+render();
+
+</script>
+
 </p>
 
 
