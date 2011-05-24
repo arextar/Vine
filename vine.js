@@ -1,10 +1,10 @@
-(function () {
+this.vine=(function (data,expando,uid,dp,vine,_data) {
 
     function id(obj) {
         return typeof obj == "string" ? document.getElementById(obj) : obj;
     }
 
-    function trigger(elem, type) {
+    function trigger(elem, type, /*Placeholders*/ init,create,event) {
 
         if (!elem.dispatchEvent) {
 
@@ -16,9 +16,8 @@
         }
 
         //default functions
-        var init = "initEvent",
-            create = "HTMLEvents",
-            event
+        init = "initEvent";
+            create = "HTMLEvents";
 
 
 
@@ -37,20 +36,8 @@
             return event;
     }
 
-    //Misc. variable declarations
-    var _data,
-
-    //An identifier to extend objects to condense all the data
-    expando = Math.random(),
-
-        //A unique identifier for data
-        uid = 1,
-
-        //An object to hold all the data
-        data = {},
-
         //Declare vine object
-        vine = this.vine = {
+        vine= {
             //A function to access/set data from an object(_data is an alias to this);
             data: _data = function (obj /*Object*/ , key /*String*/ , value /*Any*/ ) {
 
@@ -74,10 +61,13 @@
             },
 
             //Bind a handler to a type on a function
-            bind: function (obj /*Object*/ , type /*String*/ , fn /*Function*/ ) {
+            bind: function (obj /*Object*/ , type /*String*/ , fn /*Function*/, arr,x/*Placeholders*/ ) {
+
+arr=type.split(" ")
+if(arr.length>1) for(x in arr) vine.bind(obj,arr[x],fn)
 
                 //Assign an easy id to function
-                fn._vine = fn._vine || uid++;
+                fn[expando] = fn[expando] || uid++;
 
                 //If obj is a string, get element
                 obj = id(obj);
@@ -100,10 +90,10 @@
 
                     //otherwise:proceed to bind
                     obj.attachEvent ? obj.attachEvent("on" + type, function () {
-                        return !vine.trigger(obj, type, window.event).defaultPrevented;
+                        return !vine.trigger(obj, type, window.event)[dp];
                     }) : obj.addEventListener(type, function (e) {
                         var evt = vine.trigger(obj, type, e)
-                        if (evt.defaultPrevented) e.preventDefault();
+                        if (evt[dp]) e.preventDefault();
                     }, null)
 
                 }
@@ -114,9 +104,10 @@
             Event: function (e) {
                 for (var x in e) this[x] = this[x] || e[x];
 
-                if ("returnValue" in e) this.defaultPrevented = !e.returnValue;
+                if ("returnValue" in e) this[dp] = !e.returnValue;
 
                 this.timestamp = new Date().getTime();
+                this.event=e;
             },
 
             //Trigger an event on an object
@@ -141,7 +132,7 @@
                     ret = ret || handlers[x].call(obj, event) === false;
 
                     //factor in returning false to cancel events
-                    event.defaultPrevented = event.defaultPrevented || ret;
+                    event[dp] = event[dp] || ret;
                     //If immediate propogation is stopped, stop running events
                     if (event.immediatePropogationStopped) return event;
                 }
@@ -161,7 +152,7 @@
                     if (fn) {
 
                         for (x in evt[type]) {
-                            evt[type][x]._vine != fn._vine && tmp.push(evt[type][x]);
+                            evt[type][x][expando] != fn[expando] && tmp.push(evt[type][x]);
                         }
                         evt[type] = tmp;
                     }
@@ -170,7 +161,7 @@
                     for (y in evt) {
                         tmp = [];
                         for (x in evt[y]) {
-                            evt[y][x]._vine != type._vine && tmp.push(evt[y][x]);
+                            evt[y][x][expando] != type[expando] && tmp.push(evt[y][x]);
                         }
                         evt[y] = tmp;
                     }
@@ -180,14 +171,11 @@
 
         //Event properties
         vine.Event.prototype = {
-            toString: function () {
-                return "[event " + this.type + "]"
-            },
             defaultPrevented: false,
             propogationStopped: false,
             immediatePropogationStopped: false,
             preventDefault: function () {
-                this.defaultPrevented = true;
+                this[dp] = true;
             },
             stopPropogation: function () {
                 this.propogationStopped = true;
@@ -196,5 +184,7 @@
                 this.immediatePropogationStopped = true;
             }
         }
+        
+        return vine;
 
-})();
+})({},Math.random(),1,"defaultPrevented")
