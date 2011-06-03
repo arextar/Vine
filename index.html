@@ -66,7 +66,6 @@
 <input type="checkbox" style="display:none" id="check" />
 <script src="https://github.com/arexkun/Vine/raw/master/vine.js"></script>
 <script>var list=document.getElementById("test"),txt=""
-try{
 function assert(pass,message){
         txt+='<li class="'+(pass?"pass":"fail")+'">'+message+'</li>'
 }
@@ -168,9 +167,6 @@ vine.trigger(object,"mousedown");
 assert(triggered,"Other instances of that function are intact")
 
 render();
-}catch(e){
-list.innerHTML="Error:"+e;
-list.className="fail";
 }
 </script>
 <style>
