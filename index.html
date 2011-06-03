@@ -164,7 +164,7 @@ vine.unbind(object,"mouseup",test2)
 vine.trigger(object,"mouseup")
 assert(!triggered,"Unbind one function from a type")
 
-vine.trigger(objects,"mousedown");
+vine.trigger(object,"mousedown");
 assert(triggered,"Other instances of that function are intact")
 
 render();
@@ -180,6 +180,7 @@ list.className="fail";
         
         .fail{
                 color:darkorange;
+background:black;
         }
 </style>
 </p>
