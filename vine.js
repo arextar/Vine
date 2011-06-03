@@ -1,4 +1,4 @@
-this.vine=(function (data,expando,uid,dp,vine,_data) {
+vine=(function (data,expando,uid,dp,vine,_data) {
 
     function id(obj) {
         return typeof obj == "string" ? document.getElementById(obj) : obj;
