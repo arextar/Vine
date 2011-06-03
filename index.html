@@ -93,6 +93,10 @@ vine.bind("ch","mousedown",function(){
         triggered=true;
 })
 
+vine.bind("ch","custom",function(){
+triggered=true;
+})
+
 vine.bind(object,"mouse",test)
 
 vine.bind(object,"mousedown",test2)
@@ -113,6 +117,8 @@ vine.bind(object,"prevcanceled",function(e){
         e.preventDefault();
 })
 
+
+
 assert(vine,"'vine' in window")
 assert(vine.bind,"'bind' in vine")
 assert(vine.unbind,"'unbind' in vine")
@@ -131,6 +137,10 @@ assert(vine.trigger(object,"prevcanceled").defaultPrevented,"Canceled by calling
 
 vine.trigger("ch","mousedown");
 assert(triggered,"Triggered event tied to element");
+triggered=false;
+
+vine.trigger("ch","custom");
+assert(triggered,"Triggered custom event tied to element");
 triggered=false;
 
 vine.trigger("ch","click")
