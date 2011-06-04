@@ -115,6 +115,19 @@ vine.bind(object,"prevcanceled",function(e){
         e.preventDefault();
 })
 
+vine.bind(object,"namespace.custom_evt",function(e){
+ns=e.namespace;
+triggered=true
+})
+
+var ns,data;
+
+vine.bind(object,"withdata",function(e){
+data=e.data
+},{
+data:"passed"
+})
+
 
 
 assert(vine.bind,"'bind' in vine")
@@ -151,6 +164,18 @@ vine.trigger(object,"custom2")
 assert(triggered,"Second of multiple bound")
 triggered=false;
 
+vine.trigger(object,"custom_evt")
+assert(triggered,"Custom event bound with a namespace")
+assert(ns=="namespace","Event.namespace holds the namespace bound with")
+triggered=false;
+
+vine.unbind(object,".namespace");
+vine.trigger(object,"custom_evt");
+assert(!triggered,"Unbind event by namespace")
+
+vine.trigger(object,"withdata");
+assert(data.data=="passed","Data passed when binding attached to Event.data")
+
 vine.unbind(object,"custom")
 vine.trigger(object,"custom")
 assert(!triggered,"Unbind whole type")
@@ -158,10 +183,6 @@ assert(!triggered,"Unbind whole type")
 vine.unbind(object,test)
 vine.trigger(object,"mouse")
 assert(!triggered,"Unbind all of one function")
-
-vine.unbind(object,"mouseup",test2)
-vine.trigger(object,"mouseup")
-assert(!triggered,"Unbind one function from a type")
 
 vine.trigger(object,"mousedown");
 assert(triggered,"Other instances of that function are intact")
