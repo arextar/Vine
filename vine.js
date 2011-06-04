@@ -56,7 +56,7 @@ return;
                 if (object.fireEvent) {
                     if(type=="click") return object.click();
 
-            event=new Event()
+            event={}
             object.fireEvent("on"+type,event)
             return new vine.Event(event);
         }
