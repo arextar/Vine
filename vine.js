@@ -104,7 +104,7 @@ if(arr.length>1) for(x in arr) vine.bind(obj,arr[x],fn)
             Event: function (e) {
                 for (var x in e) this[x] = this[x] || e[x];
 
-                this[dp] = tpeof e.returnValue=="undefined"?e[dp]:!e.returnValue;
+                this[dp] = typeof e.returnValue=="undefined"?e[dp]:!e.returnValue;
 
                 this.timestamp = new Date().getTime();
                 this.event=e;
