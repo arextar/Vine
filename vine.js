@@ -38,7 +38,7 @@ return;
                 object.addEventListener?
                     object.addEventListener(type,function(e){
                         vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
-                    })
+                    },null)
                     :
                     object.attachEvent("on"+type,function(){
                         return !vine.trigger(object,type,window.event)[defaultPrevented];
