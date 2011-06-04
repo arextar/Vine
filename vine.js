@@ -80,7 +80,7 @@ vine=(function(expando,uid,data,defaultPrevented,vine){
             }
             event=new vine.Event(evt||{});
             
-            handlers=_data(object).e[type];
+            handlers=_data(object).e[type]||[];
             
             for(x=0;handlers[x];x++){
                 event.namespace=handlers[x].n;
