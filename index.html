@@ -173,8 +173,12 @@ vine.unbind(object,".namespace");
 vine.trigger(object,"custom_evt");
 assert(!triggered,"Unbind event by namespace")
 
+try{
 vine.trigger(object,"withdata");
 assert(data.data=="passed","Data passed when binding attached to Event.data")
+}catch(e){
+assert(0,"data not attached to event")
+}
 
 vine.unbind(object,"custom")
 vine.trigger(object,"custom")
