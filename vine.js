@@ -15,7 +15,11 @@ vine=(function(expando,uid,data,defaultPrevented,vine){
             this.timestamp=(new Date).getTime();
             this.target=this.target||this.srcElement;
         },
-        bind:function(object,type,fn,evt_dat,dat,ns,i){
+        bind:function(object,type,fn,evt_dat,dat,ns,i,arr){
+if((arr=type.split(" ")).length>1){
+for(i=0;i<arr.length;i++) vine.bind(object,arr[i],fn)
+return;
+}
             object=id(object);
             dat=_data(object);
             
