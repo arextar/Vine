@@ -56,7 +56,7 @@ return;
                 if (object.fireEvent) {
                     if(type=="click") return object.click();
             object.fireEvent("on"+type)
-        }
+        }else{
 
         //default functions
         init = "initEvent";
@@ -77,7 +77,7 @@ return;
             event[init](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
             object.dispatchEvent(event)
             return event;
-                
+            }
             }
             event=new vine.Event(evt||{});
             
