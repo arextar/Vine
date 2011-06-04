@@ -1,18 +1,60 @@
-vine=(function (data,expando,uid,dp,vine,_data) {
-
-    function id(obj) {
-        return typeof obj == "string" ? document.getElementById(obj) : obj;
+vine=(function(expando,uid,data,defaultPrevented,vine){
+    
+    function _data(object,id){
+        id=object[expando]=object[expando]||uid++
+        return data[id]=data[id]||{b:{},e:{}};
     }
+    
+    function id(object){
+        return object.charAt?document.getElementById(object):object;
+    }
+    
+    vine={
+        Event:function(e,x){
+            for(x in e) this[x]=this[x]||e[x];
+            this.timestamp=(new Date).getTime();
+            this.target=this.target||this.srcElement;
+        },
+        bind:function(object,type,fn,evt_dat,dat,ns,i){
+            object=id(object);
+            dat=_data(object);
+            
+            i=type.lastIndexOf(".");
+            
+            ns=i>=0?type.slice(0,i):"";
+            type=type.slice(i+1);
+            
+            (dat.e[type]=dat.e[type]||[]).push({
+                n:ns,
+                f:fn,
+                d:evt_dat||{}
+            });
+            if(!dat.b[type]&&object.nodeType){
+                dat.b[type]=1;
+                object.addEventListener?
+                    object.addEventListener(type,function(e){
+                        vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
+                    })
+                    :
+                    object.attachEvent("on"+type,function(){
+                        return !vine.trigger(object,type,window.event)[defaultPrevented];
+                    })
+            }
+        },
+        trigger:function(object,type,evt,handlers,x,event,prev){
+            object=id(object);
+            
+            
+            if(!evt&&object.nodeType){
+                
+                
+                
+                if (object.fireEvent) {
+                    if(type=="click") return object.click();
 
-    function trigger(elem, type, /*Placeholders*/ init,create,event) {
-
-        if (!elem.dispatchEvent) {
-
-            //possibly construct an event and use it, then return like:
-            //evt=new Event();
-            //elem.fireEvent("on"+type,evt);
-            //return evt;
-            return;
+            event=new Event()
+            object.fireEvent("on"+type,event)
+            return new vine.Event(event);
         }
 
         //default functions
@@ -32,159 +74,64 @@ vine=(function (data,expando,uid,dp,vine,_data) {
             //make the event, init it, execute it, then return
             event = document.createEvent(create)
             event[init](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
-            elem.dispatchEvent(event)
+            object.dispatchEvent(event)
             return event;
+                
+            }
+            event=new vine.Event(evt||{});
+            
+            handlers=_data(object).e[type];
+            
+            for(x=0;handlers[x];x++){
+                event.namespace=handlers[x].n;
+                event.data=handlers[x].d;
+                prev=prev||handlers[x].f.call(object,event)===false;
+            }
+            
+            event[defaultPrevented]=event[defaultPrevented]||prev;
+            
+            return event;
+        },
+        unbind:function(object,type,dat,stack,x,y,fn){
+            object=id(object);
+            if(!type){
+                delete object[expando];
+                return;
+            }
+            dat=_data(object);
+            if(type.charAt){
+                if(type.charAt(0)=="."){
+                    type=type.slice(1)
+                    for(y in dat.e){
+                        stack=[]
+                        for(x=0;x<dat.e[y].length;x++){
+                            dat.e[y][x].n!=type&&stack.push(dat.e[y][x]);
+                        }
+                        dat.e[y]=stack
+                    }
+                    
+                    return;
+                }
+                dat.e[type]=[]
+            }else{
+                        for(y in dat.e){
+                        stack=[]
+                        for(x=0;x<dat.e[y].length;x++){
+                            dat.e[y][x].f!=type&&stack.push(dat.e[y][x]);
+                        }
+                        dat.e[y]=stack
+                    }
+            }
+        }
     }
-
-        //Declare vine object
-        vine= {
-            //A function to access/set data from an object(_data is an alias to this);
-            data: _data = function (obj /*Object*/ , key /*String*/ , value /*Any*/ ) {
-
-                //Assign an id if the object does not already have one
-                var id = obj[expando] = obj[expando] || uid++,
-
-                    //Extract data using that ID, initializing the data if needed
-                    dat = data[id] = data[id] || {
-                        e: {},
-                        b: {}
-                    };
-
-                //If we are looking to set a value
-                if (value) {
-                    //Set the value and return it
-                    return dat[key] = value;
-                }
-
-                //Otherwise, access the key
-                return dat[key];
-            },
-
-            //Bind a handler to a type on a function
-            bind: function (obj /*Object*/ , type /*String*/ , fn /*Function*/, arr,x/*Placeholders*/ ) {
-
-arr=type.split(" ")
-if(arr.length>1) for(x in arr) vine.bind(obj,arr[x],fn)
-
-                //Assign an easy id to function
-                fn[expando] = fn[expando] || uid++;
-
-                //If obj is a string, get element
-                obj = id(obj);
-
-                //Get events object
-                var evt = _data(obj, "e");
-
-                //Init array if not already present...
-                (evt[type] = evt[type] || [])
-                //and add the function
-                .push(fn);
-
-                //If dealing with an element
-                if (obj.nodeType) {
-                    //get bound types
-                    var bound = _data(obj, "b");
-
-                    //If already bound, done
-                    if (bound[type]) return;
-
-                    //otherwise:proceed to bind
-                    obj.attachEvent ? obj.attachEvent("on" + type, function () {
-                        return !vine.trigger(obj, type, window.event)[dp];
-                    }) : obj.addEventListener(type, function (e) {
-                        var evt = vine.trigger(obj, type, e)
-                        if (evt[dp]) e.preventDefault();
-                    }, null)
-
-                }
-
-            },
-
-            //create a vine event object
-            Event: function (e) {
-                for (var x in e) this[x] = this[x] || e[x];
-
-                this[dp] = typeof e.returnValue=="undefined"?e[dp]:!e.returnValue;
-
-                this.timestamp = new Date().getTime();
-                this.event=e;
-            },
-
-            //Trigger an event on an object
-            trigger: function (obj, type, evt) {
-
-                obj = id(obj);
-
-                if (obj.nodeType && !evt) {
-                    return new vine.Event(trigger(obj, type));
-                }
-
-                //Get handlers from data
-                var handlers = _data(obj, "e")[type] || [],
-                    x, event = new vine.Event(evt || {
-                        type: type,
-                        target: obj
-                    }),
-                    ret = false;
-
-                //Iterate through handlers and execute each
-                for (x in handlers) {
-                    ret = ret || handlers[x].call(obj, event) === false;
-
-                    //factor in returning false to cancel events
-                    event[dp] = event[dp] || ret;
-                    //If immediate propogation is stopped, stop running events
-                    if (event.immediatePropogationStopped) return event;
-                }
-
-                return event;
-            },
-
-            unbind: function (obj, type, fn) {
-                obj = id(obj);
-                var evt = _data(obj, "e"),
-                    tmp = [],
-                    x, y;
-                if (!type) {
-                    return _data(obj, "e", {});
-                }
-                if (typeof type == "string") {
-                    if (fn) {
-
-                        for (x in evt[type]) {
-                            evt[type][x][expando] != fn[expando] && tmp.push(evt[type][x]);
-                        }
-                        evt[type] = tmp;
-                    }
-                    return evt[type] = [];
-                } else {
-                    for (y in evt) {
-                        tmp = [];
-                        for (x in evt[y]) {
-                            evt[y][x][expando] != type[expando] && tmp.push(evt[y][x]);
-                        }
-                        evt[y] = tmp;
-                    }
-                }
-            }
+    
+    vine.Event.prototype={
+        defaultPrevented:false,
+        preventDefault:function(){
+            this[defaultPrevented]=true;
         }
-
-        //Event properties
-        vine.Event.prototype = {
-            defaultPrevented: false,
-            propogationStopped: false,
-            immediatePropogationStopped: false,
-            preventDefault: function () {
-                this[dp] = true;
-            },
-            stopPropogation: function () {
-                this.propogationStopped = true;
-            },
-            stopImmediatePropogation: function () {
-                this.immediatePropogationStopped = true;
-            }
-        }
-        
-        return vine;
-
-})({},Math.random(),1,"defaultPrevented")
+    }
+    
+    return vine;
+    
+})(Math.random(),1,{},"defaultPrevented");
