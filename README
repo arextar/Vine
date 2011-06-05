@@ -8,11 +8,14 @@ Goal
 -Easily embedded and used in libraries
 -usable standalone
 
-Tested in:(There is a test heading on the homepage, send me your results if you can test with a different browser)
--Chrome 11
--IE 8
--FF 4
--Opera 11
+Tested in:
+-Browser:Grade*
+-Chrome 11:A
+-IE 8:A
+-FF 4:A
+-Opera 11:B
+
+*A=Full support, B=Partial support, C=no support
 
 API:
 
