@@ -55,7 +55,9 @@ return;
                 
                 if (object.fireEvent) {
                     if(type=="click") return object.click();
-            object.fireEvent("on"+type)
+                    try{
+return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
+}catch(e){}
         }else{
 
         //default functions
