@@ -33,17 +33,15 @@ return;
                 f:fn,
                 d:evt_dat||{}
             });
-            if(!dat.b[type]&&object.nodeType){
-                dat.b[type]=1;
-                object.addEventListener?
+            
+            !dat.b[type]&&(dat.b[type]=1,object.addEventListener?
                     object.addEventListener(type,function(e){
                         vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
                     },null)
-                    :
+                    :object.attachEvent?
                     object.attachEvent("on"+type,function(){
                         return !vine.trigger(object,type,window.event)[defaultPrevented];
-                    })
-            }
+                    }):0);
         },
         trigger:function(object,type,evt,handlers,x,event,prev){
             object=id(object);
