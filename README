@@ -1,9 +1,9 @@
 Vine.js
--About 1.7KB
+-About 1.7KB(minified, not gzipped)
 -Can be used with or without the DOM
 
 Goal
--<=2KB
+-<2KB
 -Cross-browser
 -Easily embedded and used in libraries
 -usable standalone
