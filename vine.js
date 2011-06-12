@@ -1,4 +1,4 @@
-vine=(function(expando,uid,data,defaultPrevented,vine){
+vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vine){
     
     function _data(object,id){
         id=object[expando]=object[expando]||uid++
@@ -9,39 +9,51 @@ vine=(function(expando,uid,data,defaultPrevented,vine){
         return object.charAt?document.getElementById(object):object;
     }
     
+    function filter(arr,fn,x,stack,i){
+            i=0;
+            stack=[];
+            for(x=0;x<arr.length;x++){
+                       fn&&(stack[i++]=arr[x])
+            }
+            return stack;
+}
+    
     vine={
-        Event:function(e,x){
-            for(x in e) this[x]=this[x]||e[x];
-            this.timestamp=(new Date).getTime();
-            this.target=this.target||this.srcElement;
+        Event:function(e,x,t){
+            t=this;
+            for(x in e) t[x]=t[x]||e[x];
+            t.timestamp=+new Date;
+            t.target=t.target||t.srcElement;
         },
         bind:function(object,type,fn,evt_dat,dat,ns,i,arr){
-if((arr=type.split(" ")).length>1){
-for(i=0;i<arr.length;i++) vine.bind(object,arr[i],fn)
-return;
-}
-            object=id(object);
-            dat=_data(object);
-            
-            i=type.lastIndexOf(".");
-            
-            ns=i>=0?type.slice(0,i):"";
-            type=type.slice(i+1);
-            
-            (dat.e[type]=dat.e[type]||[]).push({
-                n:ns,
-                f:fn,
-                d:evt_dat||{}
-            });
-            
-            !dat.b[type]&&(dat.b[type]=1,object.addEventListener?
-                    object.addEventListener(type,function(e){
-                        vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
-                    },null)
-                    :object.attachEvent?
-                    object.attachEvent("on"+type,function(){
-                        return !vine.trigger(object,type,window.event)[defaultPrevented];
-                    }):0);
+            if((arr=type.split(" ")).length>1){
+                for(i=0;i<arr.length;i++) vine.bind(object,arr[i],fn)
+            }
+            else
+            {
+                object=id(object);
+                dat=_data(object);
+                
+                i=type.lastIndexOf(".");
+                
+                ns=i>=0?type.slice(0,i):"";
+                type=type.slice(i+1);
+                
+                (dat.e[type]=dat.e[type]||[]).push({
+                    n:ns,
+                    f:fn,
+                    d:evt_dat||{}
+                });
+                
+                !dat.b[type]&&(dat.b[type]=1,object[addEventListener]?
+                        object[addEventListener](type,function(e){
+                            vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
+                        },null)
+                        :object[attachEvent]?
+                        object[attachEvent]("on"+type,function(){
+                            return !vine.trigger(object,type,window.event)[defaultPrevented];
+                        }):0);
+            }
         },
         trigger:function(object,type,evt,handlers,x,event,prev){
             object=id(object);
@@ -58,23 +70,19 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
 }catch(e){}
         }else{
 
-        //default functions
-        init = "initEvent";
-            create = "HTMLEvents";
-
 
 
             //if it's a mouse event, use mouse event init
-            ({
+            init=({
                 click: 1,
                 mousedown: 1,
                 mouseup: 1,
                 mousemove: 1
-            }[type]) && (init = "initMouseEvent", create = "MouseEvents")
+            }[type])
 
             //make the event, init it, execute it, then return
-            event = document.createEvent(create)
-            event[init](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+            event = document.createEvent(init?"MouseEvents":"HTMLEvents")
+            event[init?"initMouseEvent":"initEvent"](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
             object.dispatchEvent(event)
             return event;
             }
@@ -93,37 +101,34 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
             
             return event;
         },
-        unbind:function(object,type,dat,stack,x,y,fn){
+        unbind:function(object,type,fn,dat,stack,x,y,filt){
+            filt=function(f){
+                                                return f.f!=fn;
+                                    }
             object=id(object);
-            if(!type){
-                delete object[expando];
-                return;
-            }
             dat=_data(object);
-            if(type.charAt){
-                if(type.charAt(0)=="."){
-                    type=type.slice(1)
-                    for(y in dat.e){
-                        stack=[]
-                        for(x=0;x<dat.e[y].length;x++){
-                            dat.e[y][x].n!=type&&stack.push(dat.e[y][x]);
-                        }
-                        dat.e[y]=stack
-                    }
-                    
-                    return;
-                }
-                dat.e[type]=[]
-            }else{
-                        for(y in dat.e){
-                        stack=[]
-                        for(x=0;x<dat.e[y].length;x++){
-                            dat.e[y][x].f!=type&&stack.push(dat.e[y][x]);
-                        }
-                        dat.e[y]=stack
-                    }
+            if(!type){
+                        delete object[expando];
             }
-        }
+            else if(type.charAt){
+                        if(type.charAt(0)=="."){
+                                    type=type.slice(1);
+                                    for(x in dat.e){
+                                                dat.e[x]=filter(dat.e[x],function(f){
+                                                            return f.n!=type&&(!fn||f.f!=fn)
+                                                })
+                                    }
+                        }
+                        else
+                        {
+                                    dat.e[type]=fn?filter(dat.e[type],filt):[];
+                        }
+            }else{
+                        for(x in dat.e){
+                                    dat.e[x]=filter(dat.e[x],filt);
+                        }
+            }
+}
     }
     
     vine.Event.prototype={
@@ -135,4 +140,4 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
     
     return vine;
     
-})(Math.random(),1,{},"defaultPrevented");
+})(Math.random(),1,{},"defaultPrevented","addEventListener","attachEvent");
