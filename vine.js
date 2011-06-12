@@ -9,14 +9,6 @@ vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vi
         return object.charAt?document.getElementById(object):object;
     }
     
-    function filter(arr,fn,x,stack,i){
-            i=0;
-            stack=[];
-            for(x=0;x<arr.length;x++){
-                       fn&&(stack[i++]=arr[x])
-            }
-            return stack;
-}
     
     vine={
         Event:function(e,x,t){
@@ -101,34 +93,37 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
             
             return event;
         },
-        unbind:function(object,type,fn,dat,stack,x,y,filt){
-            filt=function(f){
-                                                return f.f!=fn;
-                                    }
+        unbind:function(object,type,dat,stack,x,y,fn){
             object=id(object);
-            dat=_data(object);
             if(!type){
-                        delete object[expando];
+                delete object[expando];
+                return;
             }
-            else if(type.charAt){
-                        if(type.charAt(0)=="."){
-                                    type=type.slice(1);
-                                    for(x in dat.e){
-                                                dat.e[x]=filter(dat.e[x],function(f){
-                                                            return f.n!=type&&(!fn||f.f!=fn)
-                                                })
-                                    }
+            dat=_data(object);
+            if(type.charAt){
+                if(type.charAt(0)=="."){
+                    type=type.slice(1)
+                    for(y in dat.e){
+                        stack=[]
+                        for(x=0;x<dat.e[y].length;x++){
+                            dat.e[y][x].n!=type&&stack.push(dat.e[y][x]);
                         }
-                        else
-                        {
-                                    dat.e[type]=fn?filter(dat.e[type],filt):[];
-                        }
+                        dat.e[y]=stack
+                    }
+                    
+                    return;
+                }
+                dat.e[type]=[]
             }else{
-                        for(x in dat.e){
-                                    dat.e[x]=filter(dat.e[x],filt);
+                        for(y in dat.e){
+                        stack=[]
+                        for(x=0;x<dat.e[y].length;x++){
+                            dat.e[y][x].f!=type&&stack.push(dat.e[y][x]);
                         }
+                        dat.e[y]=stack
+                    }
             }
-}
+        }
     }
     
     vine.Event.prototype={
