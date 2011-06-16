@@ -26,10 +26,10 @@ vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vi
                 object=id(object);
                 dat=_data(object);
                 
-                i=type.lastIndexOf(".");
-                
-                ns=i>=0?type.slice(0,i):"";
-                type=type.slice(i+1);
+                if(ns=/^(.+)\.([^\.]+)$/.exec(type)){
+                type=ns[2];
+                ns=ns[1];
+                }
                 
                 (dat.e[type]=dat.e[type]||[]).push({
                     n:ns,
