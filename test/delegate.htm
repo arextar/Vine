@@ -1,0 +1,20 @@
+<script src="../vine.js"></script>
+<script src="../plugins/delegate.js"></script>
+
+<span id="t">
+<div>la</div>
+</span>
+<script>
+
+    function test(){
+        this.style.color="red";
+    }
+    vine.delegate(document,"div","click",test)
+    
+    vine.undelegate(document,"div","click")
+    
+    
+    
+    document.getElementById("t").innerHTML+="<div>a</div><div>b</div>";
+    
+</script>
