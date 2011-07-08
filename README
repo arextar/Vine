@@ -19,7 +19,7 @@ Tested in:
 
 API:
 
-vine.bind(target:Object/DOMElement,type:String,handler:Function) //binds a handler to the element
+vine.bind(target:Object/DOMElement,type:String,handler:Function[,data:Object]) //binds a handler to the element
 vine.unbind(target:Object/DOMElement[,type:String][,handler:Function)) //unbinds a handler based on criteria
 vine.trigger(target:Object/DOMElement[,type:String][,event:Object/Event]) //returns event object after handler execution
 
@@ -36,3 +36,10 @@ vine.trigger("check_box","click")
 
 //will focus on a textarea
 vine.trigger("text","focus")
+
+Plugins:
+*delegate
+   -vine.delegate(context:Document/DOMElement,target:DOMElement,type:String,handler:Function[,data:Object])
+   -vine.undelegate(context:Document/DOMElement,target:DOMElement,type:String)
+*once
+   -vine.once(target:Object/DOMElement,type:String,handler:Function[,data:Object]) //binds a handler that will be unbound once triggered
