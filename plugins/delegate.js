@@ -4,9 +4,16 @@ vine.re=function(str){
   return this._c[str]=this._c[str]||new RegExp(str);
 }
 
-vine.is=document.createElement("a").webkitMatchesSelector?function(elem,sel){
-  return elem.webkitMatchesSelector(sel)
-}:function(elem,sel,tag,id,x,l,c){
+vine.is=function(elem,sel,tag,id,x,l,c){
+  
+  c=sel.split(",")
+  l=c.length;
+  if(c.length>1){
+    for(x=0;x<l;x++){
+      if(vine.is(elem,c[x])) return true;
+    }
+    return false;
+  }
   
   sel=sel.split(".");
   tag=/^(\w+)/.exec(sel[0])
@@ -20,8 +27,8 @@ vine.is=document.createElement("a").webkitMatchesSelector?function(elem,sel){
     if(!vine.re("(^|\\s)"+l[x]+"(\\s|$)").test(c)) return false; 
   }
   
-    return !tag||elem.nodeName.toLowerCase()==tag[0]
-    &&     !id||elem.id==id[1];
+    return (!tag||elem.nodeName.toLowerCase()==tag[0])
+    &&     (!id||elem.id==id[1]);
 }
 
 vine.delegate=function(context,selector,type,handler,data){
@@ -63,4 +70,12 @@ vine.undelegate=function(context,selector,type){
     }
     
     dat.d[type]=ret;
+}
+
+vine.live=function(sel,type,fn){
+  vine.delegate(document,sel,type,fn)
+}
+
+vine.die=function(sel,type,fn){
+  vine.undelegate(document,sel,type,fn)
 }
