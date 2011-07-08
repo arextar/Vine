@@ -1,42 +1,88 @@
-vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vine){
+vine=(function(
+               expando,//The amount of milliseconds right now, unique identifier shorter than Math.random()
+               uid,//A unique identifier, attached with expando to link to stored data
+               data,//An object storing data(stored in central store for simplicity and to prevent leakage)
+               defaultPrevented,//Shortening of .defaultPrevented
+               addEventListener,//Shortening of .addEventListener
+               attachEvent,//Shortening of .attachEvent
+               vine,//Placeholder for vine object
+               Event//Placeholder for vine.Event
+               ){
     
-    function _data(object,id){
+    //Initialize and fetch the data on an object
+    function _data(
+                   object,//Object to get data from
+                   id//Placeholder for unique id
+                   ){
         id=object[expando]=object[expando]||uid++
         return data[id]=data[id]||{b:{},e:{}};
     }
     
-    function id(object){
+    //If an object is a string, get the element with that ID
+    function id(
+                object//Object to test
+                ){
         return object.charAt?document.getElementById(object):object;
     }
     
-    
+    //Create vine object
     vine={
-        Event:function(e,x,t){
+        
+        //Expose data function for plugins
+        d:_data,
+        
+        //A constructor to build a normalized event
+        Event:Event=function(
+                             e,//Objects to mix in properties of
+                             x,//Placeholder for iteration
+                             t//Placeholder for 'this' to shorten code
+                             ){
             t=this;
             for(x in e) t[x]=t[x]||e[x];
             t.timestamp=+new Date;
             t.target=t.target||t.srcElement;
         },
-        bind:function(object,type,fn,evt_dat,dat,ns,i,arr){
-            if((arr=type.split(" ")).length>1){
-                for(i=0;i<arr.length;i++) vine.bind(object,arr[i],fn)
+        
+        //Bind a function to an element
+        bind:function(
+                      object,//Object to attach event to
+                      type,//Type of event (optinally prefixed with a namespace)
+                      fn,//Handler to bind
+                      evt_dat,//Data to bind with
+                      dat,//Placeholder for element's data
+                      ns,//Placeholder for namespace
+                      arr,//Placeholder for an array
+                      l//Placeholder for length
+                      ){
+            
+            //If multiple types are provided, bind for each
+            if((l=(arr=type.split(" ")).length)>1){
+                while(l--) vine.bind(object,arr[l],fn)
             }
+            
+            //otherwise...
             else
             {
+                //Get the element if object is a string
                 object=id(object);
+                
+                //Get data
                 dat=_data(object);
                 
+                //Check for a namespace, if one is present assign to namespace variable
                 if(ns=/^(.+)\.([^\.]+)$/.exec(type)){
                 type=ns[2];
                 ns=ns[1];
                 }
                 
+                //Initialize the array of functions, then push the handler and other data to it
                 (dat.e[type]=dat.e[type]||[]).push({
                     n:ns,
                     f:fn,
                     d:evt_dat||{}
                 });
                 
+                //Bind if the object is an element
                 !dat.b[type]&&(dat.b[type]=1,object[addEventListener]?
                         object[addEventListener](type,function(e){
                             vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
@@ -47,7 +93,16 @@ vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vi
                         }):0);
             }
         },
-        trigger:function(object,type,evt,handlers,x,event,prev){
+        trigger:function(
+                         object,//Object to trigger event on
+                         type,//Type of event to trigger
+                         evt,//Optional object to mix in to the event passed
+                         handlers,//Placeholder for an array of handlers
+                         x,//Placeholder for iteration
+                         event,//Placeholder for genereated event
+                         prev,//Placeholder for determining if default is prevented
+                         handler//Placeholder for specific handler
+                         ){
             object=id(object);
             
             
@@ -58,7 +113,7 @@ vine=(function(expando,uid,data,defaultPrevented,addEventListener,attachEvent,vi
                 if (object.fireEvent) {
                     if(type=="click") return object.click();
                     try{
-return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
+return new Event({defaultPrevented:object.fireEvent("on"+type)})
 }catch(e){}
         }else{
 
@@ -79,14 +134,14 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
             return event;
             }
             }
-            event=new vine.Event(evt||{});
+            event=new Event(evt||{});
             
             handlers=_data(object).e[type]||[];
             
-            for(x=0;handlers[x];x++){
-                event.namespace=handlers[x].n;
-                event.data=handlers[x].d;
-                prev=prev||handlers[x].f.call(object,event)===false;
+            for(x=0;handler=handlers[x];x++){
+                event.namespace=handler.n;
+                event.data=handler.d;
+                prev=prev||handler.f.call(object,event)===false;
             }
             
             event[defaultPrevented]=event[defaultPrevented]||prev;
@@ -126,7 +181,7 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
         }
     }
     
-    vine.Event.prototype={
+    Event.prototype={
         defaultPrevented:false,
         preventDefault:function(){
             this[defaultPrevented]=true;
@@ -135,4 +190,4 @@ return new vine.Event({defaultPrevented:object.fireEvent("on"+type)})
     
     return vine;
     
-})(Math.random(),1,{},"defaultPrevented","addEventListener","attachEvent");
+})(+new Date,1,{},"defaultPrevented","addEventListener","attachEvent");
