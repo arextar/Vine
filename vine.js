@@ -5,6 +5,7 @@ vine=(function(
                defaultPrevented,//Shortening of .defaultPrevented
                addEventListener,//Shortening of .addEventListener
                attachEvent,//Shortening of .attachEvent
+               document,//Reference to document
                vine,//Placeholder for vine object
                Event//Placeholder for vine.Event
                ){
@@ -111,24 +112,22 @@ vine=(function(
                 
                 
                 if (object.fireEvent) {
-                    if(type=="click") return object.click();
                     try{
-return new Event({defaultPrevented:object.fireEvent("on"+type)})
+return new Event({defaultPrevented:object[type=="click"?type:fireEvent]("on"+type)})
 }catch(e){}
         }else{
 
 
 
-            //if it's a mouse event, use mouse event init
-            init=({
-                click: 1,
-                mousedown: 1,
-                mouseup: 1,
-                mousemove: 1
-            }[type])
+            
 
             //make the event, init it, execute it, then return
-            event = document.createEvent(init?"MouseEvents":"HTMLEvents")
+            event = document.createEvent((
+                
+            //if it's a mouse event, use mouse event init
+            init=/click|mousedown|mouseup|mousemove/.test(type)
+            
+            )?"MouseEvents":"HTMLEvents")
             event[init?"initMouseEvent":"initEvent"](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
             object.dispatchEvent(event)
             return event;
@@ -148,15 +147,29 @@ return new Event({defaultPrevented:object.fireEvent("on"+type)})
             
             return event;
         },
-        unbind:function(object,type,dat,stack,x,y,fn){
+        unbind:function(
+                        object,//Object to detach event from
+                        type,//Type of event to unbind
+                        dat,//Placeholder for data attached to object
+                        stack,//Placeholder for the array of functions that don't match
+                        x,//Placeholder for iteration
+                        y//Placeholder for iteration
+                        ){
             object=id(object);
+            
+            //If only an object is given, remove data
             if(!type){
-                delete object[expando];
-                return;
+                //remove both the id on the object and the object from data object to reduce memory usage
+                return data[object[expando]]=object[expando]=null;
             }
             dat=_data(object);
+            
+            //If type is a string
             if(type.charAt){
+                
+                //if it is a namespace
                 if(type.charAt(0)=="."){
+                    //go through all handlers and test for the namespace
                     type=type.slice(1)
                     for(y in dat.e){
                         stack=[]
@@ -165,10 +178,12 @@ return new Event({defaultPrevented:object.fireEvent("on"+type)})
                         }
                         dat.e[y]=stack
                     }
-                    
-                    return;
                 }
+                //Otherwise just reset the entire type
+                else{
                 dat.e[type]=[]
+                }
+                //If type is instead a function, remove all instances of that function
             }else{
                         for(y in dat.e){
                         stack=[]
@@ -181,6 +196,7 @@ return new Event({defaultPrevented:object.fireEvent("on"+type)})
         }
     }
     
+    //Functions on the event's prototype
     Event.prototype={
         defaultPrevented:false,
         preventDefault:function(){
@@ -190,4 +206,4 @@ return new Event({defaultPrevented:object.fireEvent("on"+type)})
     
     return vine;
     
-})(+new Date,1,{},"defaultPrevented","addEventListener","attachEvent");
+})(+(new Date),1,{},"defaultPrevented","addEventListener","attachEvent",document);
