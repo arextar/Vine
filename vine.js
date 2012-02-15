@@ -15,37 +15,38 @@ vine=(function(
                    object,//Object to get data from
                    id//Placeholder for unique id
                    ){
-        id=object[expando]=object[expando]||uid++
-        return data[id]=data[id]||{b:{},e:{}};
+        id = object[expando] = object[expando] || uid++
+        return data[id] = data[id] || {b: {}, e: {}};
     }
     
     //If an object is a string, get the element with that ID
     function id(
                 object//Object to test
                 ){
-        return object.charAt?document.getElementById(object):object;
+        return object.charAt ? document.getElementById(object) : object;
     }
     
     //Create vine object
     vine={
         
         //Expose data function for plugins
-        d:_data,
+        d: _data,
+        id: id,
         
         //A constructor to build a normalized event
-        Event:Event=function(
+        Event: Event = function(
                              e,//Objects to mix in properties of
                              x,//Placeholder for iteration
                              t//Placeholder for 'this' to shorten code
                              ){
-            t=this;
-            for(x in e) t[x]=t[x]||e[x];
-            t.timestamp=+new Date;
-            t.target=t.target||t.srcElement;
+            t = this;
+            for(x in e) t[x] = t[x] || e[x];
+            t.timestamp = +new Date;
+            t.target = t.target || t.srcElement;
         },
         
         //Bind a function to an element
-        bind:function(
+        bind: function(
                       object,//Object to attach event to
                       type,//Type of event (optinally prefixed with a namespace)
                       fn,//Handler to bind
@@ -57,41 +58,40 @@ vine=(function(
                       ){
             
             //If multiple types are provided, bind for each
-            if((l=(arr=type.split(" ")).length)>1){
-                while(l--) vine.bind(object,arr[l],fn)
+            if((l = (arr = type.split(" ")).length) > 1){
+                while(l--) vine.bind(object, arr[l], fn)
             }
             
             //otherwise...
             else
             {
                 //Get the element if object is a string
-                object=id(object);
+                object = id(object);
                 
                 //Get data
-                dat=_data(object);
+                dat = _data(object);
                 
                 //Check for a namespace, if one is present assign to namespace variable
-                if(ns=/^(.+)\.([^\.]+)$/.exec(type)){
-                type=ns[2];
-                ns=ns[1];
+                if(ns = /^(.+)\.([^\.]+)$/.exec(type)){
+                    type = ns[2];
+                    ns = ns[1];
                 }
                 
                 //Initialize the array of functions, then push the handler and other data to it
-                (dat.e[type]=dat.e[type]||[]).push({
-                    n:ns,
-                    f:fn,
-                    d:evt_dat||{}
+                (dat.e[type] = dat.e[type] || []).push({
+                    n: ns,
+                    f: fn,
+                    d: evt_dat || {}
                 });
                 
                 //Bind if the object is an element
-                !dat.b[type]&&(dat.b[type]=1,object[addEventListener]?
-                        object[addEventListener](type,function(e){
-                            vine.trigger(object,type,e)[defaultPrevented]&&e.preventDefault();
+                !dat.b[type] && (dat.b[type] = 1, object[addEventListener] ?
+                        object[addEventListener](type, function(e){
+                            vine.trigger(object, type, e)[defaultPrevented] && e.preventDefault();
                         },null)
-                        :object[attachEvent]?
-                        object[attachEvent]("on"+type,function(){
-                            return !vine.trigger(object,type,window.event)[defaultPrevented];
-                        }):0);
+                        :object[attachEvent]("on" + type, function(){
+                            return !vine.trigger(object, type, window.event)[defaultPrevented];
+                        }));
             }
         },
         trigger:function(
@@ -99,51 +99,45 @@ vine=(function(
                          type,//Type of event to trigger
                          evt,//Optional object to mix in to the event passed
                          handlers,//Placeholder for an array of handlers
-                         x,//Placeholder for iteration
+                         x, len,//Placeholders for iteration
                          event,//Placeholder for genereated event
                          prev,//Placeholder for determining if default is prevented
                          handler//Placeholder for specific handler
                          ){
-            object=id(object);
+            object = id(object);
             
             
-            if(!evt&&object.nodeType){
-                
-                
-                
-                if (object.fireEvent) {
+            if(!evt && object.nodeType){
+                if(object.fireEvent){
                     try{
-return new Event({defaultPrevented:object[type=="click"?type:fireEvent]("on"+type)})
-}catch(e){}
-        }else{
-
-
-
-            
-
-            //make the event, init it, execute it, then return
-            event = document.createEvent((
-                
-            //if it's a mouse event, use mouse event init
-            init=/click|mousedown|mouseup|mousemove/.test(type)
-            
-            )?"MouseEvents":"HTMLEvents")
-            event[init?"initMouseEvent":"initEvent"](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
-            object.dispatchEvent(event)
-            return event;
+                        return new Event({defaultPrevented:object[type === "click" ? type : fireEvent]("on" + type)})
+                    }catch(e){}
+                }else{
+                    //make the event, init it, execute it, then return
+                    event = document.createEvent((
+                        
+                    //if it's a mouse event, use mouse event init
+                    init=/click|mousedown|mouseup|mousemove/.test(type)
+                    
+                    ) ? "MouseEvents" : "HTMLEvents")
+                    event[init ? "initMouseEvent" : "initEvent"](type, true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+                    object.dispatchEvent(event);
+                    return event;
+                }
             }
-            }
-            event=new Event(evt||{});
+            event = new Event(evt || {});
             
-            handlers=_data(object).e[type]||[];
+            handlers = _data(object).e[type] || [];
             
-            for(x=0;handler=handlers[x];x++){
-                event.namespace=handler.n;
-                event.data=handler.d;
-                prev=prev||handler.f.call(object,event)===false;
+            for(x = 0, len = handlers.length; x < len; x++){
+                if(handler = handlers[x]){
+                    event.namespace = handler.n;
+                    event.data = handler.d;
+                    prev = prev || handler.f.call(object, event) === false;
+                }
             }
             
-            event[defaultPrevented]=event[defaultPrevented]||prev;
+            event[defaultPrevented] = event[defaultPrevented] || prev;
             
             return event;
         },
@@ -151,46 +145,44 @@ return new Event({defaultPrevented:object[type=="click"?type:fireEvent]("on"+typ
                         object,//Object to detach event from
                         type,//Type of event to unbind
                         dat,//Placeholder for data attached to object
-                        stack,//Placeholder for the array of functions that don't match
-                        x,//Placeholder for iteration
-                        y//Placeholder for iteration
+                        x, y, len, a//Placeholders for iteration
                         ){
-            object=id(object);
+            object = id(object);
             
             //If only an object is given, remove data
             if(!type){
                 //remove both the id on the object and the object from data object to reduce memory usage
-                return data[object[expando]]=object[expando]=null;
+                return data[object[expando]] = object[expando] = null;
             }
-            dat=_data(object);
+            dat = _data(object);
             
             //If type is a string
             if(type.charAt){
                 
                 //if it is a namespace
-                if(type.charAt(0)=="."){
+                if(type.charAt(0) === "."){
                     //go through all handlers and test for the namespace
-                    type=type.slice(1)
+                    type = type.slice(1)
                     for(y in dat.e){
-                        stack=[]
-                        for(x=0;x<dat.e[y].length;x++){
-                            dat.e[y][x].n!=type&&stack.push(dat.e[y][x]);
+                        a = dat.e[y];
+                        len = a.length;
+                        for(x = 0; x < len;x++){
+                            a[x].n === type && (a[x] = null);
                         }
-                        dat.e[y]=stack
                     }
                 }
                 //Otherwise just reset the entire type
                 else{
-                dat.e[type]=[]
+                    dat.e[type] = []
                 }
                 //If type is instead a function, remove all instances of that function
             }else{
-                        for(y in dat.e){
-                        stack=[]
-                        for(x=0;x<dat.e[y].length;x++){
-                            dat.e[y][x].f!=type&&stack.push(dat.e[y][x]);
+                    for(y in dat.e){
+                        a = dat.e[y];
+                        len = a.length;
+                        for(x = 0; x < len; x++){
+                            a[x].f === type && (a[x] = null);
                         }
-                        dat.e[y]=stack
                     }
             }
         }
@@ -198,9 +190,9 @@ return new Event({defaultPrevented:object[type=="click"?type:fireEvent]("on"+typ
     
     //Functions on the event's prototype
     Event.prototype={
-        defaultPrevented:false,
-        preventDefault:function(){
-            this[defaultPrevented]=true;
+        defaultPrevented: false,
+        preventDefault: function(){
+            this[defaultPrevented] = true;
         }
     }
     
