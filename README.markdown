@@ -1,5 +1,5 @@
 # Vine.js
-* About 1.7KB(about 1k gzipped)
+* 1.6KB (about .9k gzipped)
 * Can be used with or without the DOM
 
 ## Goal
